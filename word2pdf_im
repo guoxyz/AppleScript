@@ -1,0 +1,49 @@
+on run {input, parameters}
+    -- 创建一个文件处理逻辑
+    tell application "Microsoft Word"
+        -- 开始逐个处理输入的文件
+        repeat with theFile in input
+            try
+                -- 打开 Word 文件
+                open theFile
+                
+                -- 等待 Word 文件完全加载
+                delay 2 -- 等待 2 秒（根据需要调整等待时间）
+                
+                -- 获取文件路径
+                set filePath to theFile as text
+                
+                -- 去除扩展名 .docx 或 .doc
+                if filePath ends with ".docx" then
+                    set pdfFile to text 1 thru -6 of filePath & ".pdf"
+                else if filePath ends with ".doc" then
+                    set pdfFile to text 1 thru -5 of filePath & ".pdf"
+                else
+                    -- 如果文件扩展名不正确，跳过
+                    display dialog "文件扩展名不支持: " & filePath
+                    close active document without saving
+                    next repeat
+                end if
+                
+                -- 将文档保存为 PDF
+                save as active document file name pdfFile file format format PDF
+                
+                -- 等待保存操作完成
+                delay 1 -- 等待 1 秒（根据需要调整等待时间）
+                
+                -- 关闭当前文档
+                close active document saving no
+            on error errMsg
+                -- 捕获错误并显示
+                display dialog "处理文件时出错: " & filePath & " 错误信息: " & errMsg
+                delay 2
+                try
+                    -- 尝试关闭当前文档，避免 Word 停滞
+                    close active document saving no
+                end try
+            end try
+        end repeat
+    end tell
+    
+    return input
+end run
