@@ -1,0 +1,25 @@
+on run {input, parameters}
+    tell application "Microsoft Word"
+        repeat with theFile in input
+            -- 获取原始文件路径和名称
+            set filePath to theFile as text
+            -- 去掉文件扩展名 (处理 .docx 和 .doc)
+            if filePath ends with ".docx" then
+                set pdfFile to text 1 thru -6 of filePath & ".pdf"
+            else if filePath ends with ".doc" then
+                set pdfFile to text 1 thru -5 of filePath & ".pdf"
+            else
+                -- 如果不是 Word 文件，跳过
+                display dialog "此文件不是 Word 文件: " & filePath
+                return
+            end if
+            -- 打开 Word 文件
+            open theFile
+            -- 保存为 PDF
+            save as active document file name pdfFile file format format PDF
+            -- 关闭 Word 文档
+            close active document
+        end repeat
+    end tell
+    return input
+end run
